@@ -1,0 +1,43 @@
+---
+- name: Install Apache2 on Ubuntu and configure to listen on port 8080
+  hosts: ubuntu
+  become: yes
+
+  tasks:
+    - name: Update apt package cache
+      apt:
+        update_cache: yes
+      become: yes
+
+    - name: Install Apache2 package
+      apt:
+        name: apache2
+        state: present
+      become: yes
+
+    - name: Check if Apache2 service is enabled
+      systemd:
+        name: apache2
+        enabled: yes
+      register: apache_enabled
+
+    - name: Check if Apache2 service is running
+      systemd:
+        name: apache2
+        state: started
+      when: apache_enabled.changed
+      register: apache_runnings
+
+    - name: apache2 listen on port 8081
+      lineinfile: dest=/etc/apache2/ports.conf regexp="^Listen 80" line="Listen 8081" state=present
+
+    - name: apache2 virtualhost on port 8081
+      lineinfile: dest=/etc/apache2/sites-available/000-default.conf regexp="^<VirtualHost \*:80>" line="<VirtualHost *:8081>" state=present
+
+
+    - name: Restart Apache2 service
+      service:
+        name: apache2
+        state: restarted
+      become: yes
+

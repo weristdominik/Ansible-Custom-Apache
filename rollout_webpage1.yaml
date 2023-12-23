@@ -1,0 +1,19 @@
+---
+- name: Rollout Webpage1 on Remote Machine
+  hosts: ubuntu
+  become: yes
+
+  tasks:
+    - name: Copy local ./data/html_templates/webpage1.html to remote machine
+      copy:
+        src: /etc/ansible/playbooks/data/html-templates/webpage1.html
+        dest: /var/www/html/index.html
+        remote_src: false
+      become: yes
+
+    - name: Restart Apache2 service
+      service:
+        name: apache2
+        state: restarted
+      become: yes
+
